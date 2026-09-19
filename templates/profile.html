@@ -12,7 +12,7 @@
             <img
                 src="{{ profile.avatar.url }}"
                 class="profile-avatar"
-                alt="Аватар"
+                alt=""
             >
         {% else %}
             <div class="profile-avatar profile-avatar-empty">
@@ -93,15 +93,39 @@
 
         <article class="profile-post">
 
-            <div class="profile-post-date">
-                {{ post.created_at|date:"d.m.Y H:i" }}
+            <div class="post-user">
+
+                {% if profile.avatar %}
+                    <img
+                        src="{{ profile.avatar.url }}"
+                        class="post-avatar"
+                        alt=""
+                    >
+                {% else %}
+                    <div class="post-avatar avatar-empty">
+                        {{ profile_user.username|first|upper }}
+                    </div>
+                {% endif %}
+
+                <div>
+                    <div class="username">
+                        @{{ profile_user.username }}
+                    </div>
+
+                    <div class="date">
+                        {{ post.created_at|date:"d.m.Y H:i" }}
+                    </div>
+                </div>
+
             </div>
+
 
             {% if post.text %}
                 <div class="profile-post-text">
                     {{ post.text|linebreaksbr }}
                 </div>
             {% endif %}
+
 
             {% if post.image %}
                 <img
@@ -111,6 +135,7 @@
                 >
             {% endif %}
 
+
             <div class="profile-post-actions">
 
                 <span>
@@ -119,13 +144,13 @@
                 </span>
 
                 <span>
-                    <i class="bi bi-repeat"></i>
-                    {{ post.reposts.count }}
+                    <i class="bi bi-chat"></i>
+                    {{ post.comments.count }}
                 </span>
 
                 <span>
-                    <i class="bi bi-chat"></i>
-                    {{ post.comments.count }}
+                    <i class="bi bi-repeat"></i>
+                    {{ post.reposts.count }}
                 </span>
 
             </div>

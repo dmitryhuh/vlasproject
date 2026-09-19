@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Пошук — Made{% endblock %}
+
+{% block content %}
+
+<div class="page">
+
+    <div class="page-header">
+        <h1>Пошук</h1>
+    </div>
+
+
+    <form method="get" class="search-box">
+
+        <i class="bi bi-search"></i>
+
+        <input
+            type="text"
+            name="q"
+            value="{{ query }}"
+            placeholder="Знайти користувача або публікацію..."
+            autocomplete="off"
+        >
+
+        {% if query %}
+            <a
+                href="{% url 'search' %}"
+                class="search-clear"
+            >
+                <i class="bi bi-x"></i>
+            </a>
+        {% endif %}
+
+    </form>
+
+
+    {% if query %}
+
+        {% if users %}
+
+            <div class="result-title">
+                Користувачі
+            </div>
+
+            <div class="search-users">
+
+                {% for found_user in users %}
+
+                    <a
+                        href="{% url 'profile' found_user.username %}"
+                        class="user-result"
+                    >
+
+                        {% if found_user.profile.avatar %}
+
+                            <img
+                                src="{{ found_user.profile.avatar.url }}"
+                                class="user-result-avatar"
+                                alt=""
+                            >
+
+                        {% else %}
+
+                            <div class="user-result-avatar avatar-empty">
+                                {{ found_user.username|first|upper }}
+                            </div>
+
+                        {% endif %}
+
+
+                        <div>
+
+                            <div class="user-result-name">
+                                {{ found_user.username }}
+                            </div>
+
+                            <div class="user-result-username">
+                                @{{ found_user.username }}
+                            </div>
+
+                        </div>
+
+                    </a>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        {% if posts %}
+
+            <div class="result-title">
+                Публікації
+            </div>
+
+            <div class="search-posts">
+
+                {% for post in posts %}
+
+                    <article class="search-post">
+
+                        <div class="post-user">
+
+                            {% if post.author.profile.avatar %}
+
+                                <img
+                                    src="{{ post.author.profile.avatar.url }}"
+                                    class="post-avatar"
+                                    alt=""
+                                >
+
+                            {% else %}
+
+                                <div class="post-avatar avatar-empty">
+                                    {{ post.author.username|first|upper }}
+                                </div>
+
+                            {% endif %}
+
+
+                            <div>
+
+                                <a
+                                    href="{% url 'profile' post.author.username %}"
+                                    class="username"
+                                >
+                                    @{{ post.author.username }}
+                                </a>
+
+                                <div class="date">
+                                    {{ post.created_at|date:"d.m.Y H:i" }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {% if post.text %}
+                            <div class="search-post-text">
+                                {{ post.text|linebreaksbr }}
+                            </div>
+                        {% endif %}
+
+
+                        {% if post.image %}
+                            <img
+                                src="{{ post.image.url }}"
+                                class="search-post-image"
+                                alt=""
+                            >
+                        {% endif %}
+
+
+                        <div class="search-post-actions">
+
+                            <span>
+                                <i class="bi bi-heart"></i>
+                                {{ post.likes.count }}
+                            </span>
+
+                            <span>
+                                <i class="bi bi-chat"></i>
+                                {{ post.comments.count }}
+                            </span>
+
+                            <span>
+                                <i class="bi bi-repeat"></i>
+                                {{ post.reposts.count }}
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        {% if not users and not posts %}
+
+            <div class="empty">
+                Нічого не знайдено.
+            </div>
+
+        {% endif %}
+
+    {% else %}
+
+        <div class="search-empty">
+            Введіть запит для пошуку.
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

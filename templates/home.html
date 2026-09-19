@@ -7,15 +7,8 @@
 <div class="home">
 
     <div class="tabs">
-
-        <a href="{% url 'home' %}">
-            Для вас
-        </a>
-
-        <a href="?feed=following">
-            Підписки
-        </a>
-
+        <a href="{% url 'home' %}">Для вас</a>
+        <a href="?feed=following">Підписки</a>
     </div>
 
 
@@ -25,26 +18,42 @@
 
             <article class="post">
 
-                <div class="post-top">
+                <div class="post-user">
 
-                    <a
-                        href="{% url 'profile' post.author.username %}"
-                        class="username"
-                    >
-                        @{{ post.author.username }}
-                    </a>
+                    {% if post.author.profile.avatar %}
+                        <img
+                            src="{{ post.author.profile.avatar.url }}"
+                            class="post-avatar"
+                            alt=""
+                        >
+                    {% else %}
+                        <div class="post-avatar avatar-empty">
+                            {{ post.author.username|first|upper }}
+                        </div>
+                    {% endif %}
 
-                    <span class="date">
-                        {{ post.created_at|date:"d.m.Y H:i" }}
-                    </span>
+                    <div>
+                        <a
+                            href="{% url 'profile' post.author.username %}"
+                            class="username"
+                        >
+                            @{{ post.author.username }}
+                        </a>
+
+                        <div class="date">
+                            {{ post.created_at|date:"d.m.Y H:i" }}
+                        </div>
+                    </div>
 
                 </div>
+
 
                 {% if post.text %}
                     <div class="post-text">
                         {{ post.text|linebreaksbr }}
                     </div>
                 {% endif %}
+
 
                 {% if post.image %}
                     <img
@@ -134,7 +143,6 @@
                     <button type="submit">
                         <i class="bi bi-arrow-up"></i>
                     </button>
-
                 </form>
 
             </article>
@@ -154,26 +162,42 @@
 
             <article class="post">
 
-                <div class="post-top">
+                <div class="post-user">
 
-                    <a
-                        href="{% url 'profile' post.author.username %}"
-                        class="username"
-                    >
-                        @{{ post.author.username }}
-                    </a>
+                    {% if post.author.profile.avatar %}
+                        <img
+                            src="{{ post.author.profile.avatar.url }}"
+                            class="post-avatar"
+                            alt=""
+                        >
+                    {% else %}
+                        <div class="post-avatar avatar-empty">
+                            {{ post.author.username|first|upper }}
+                        </div>
+                    {% endif %}
 
-                    <span class="date">
-                        {{ post.created_at|date:"d.m.Y H:i" }}
-                    </span>
+                    <div>
+                        <a
+                            href="{% url 'profile' post.author.username %}"
+                            class="username"
+                        >
+                            @{{ post.author.username }}
+                        </a>
+
+                        <div class="date">
+                            {{ post.created_at|date:"d.m.Y H:i" }}
+                        </div>
+                    </div>
 
                 </div>
+
 
                 {% if post.text %}
                     <div class="post-text">
                         {{ post.text|linebreaksbr }}
                     </div>
                 {% endif %}
+
 
                 {% if post.image %}
                     <img
@@ -263,7 +287,6 @@
                     <button type="submit">
                         <i class="bi bi-arrow-up"></i>
                     </button>
-
                 </form>
 
             </article>

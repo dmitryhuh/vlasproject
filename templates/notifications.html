@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Сповіщення — Made{% endblock %}
+
+{% block content %}
+
+<div class="page">
+
+    <div class="page-header">
+        <h1>Сповіщення</h1>
+    </div>
+
+    <div class="notifications">
+
+        {% for notification in notifications %}
+
+            <div class="notification-card">
+
+                <div class="notification-icon">
+                    <i class="bi bi-bell"></i>
+                </div>
+
+                <div class="notification-info">
+
+                    <div class="notification-message">
+                        {{ notification.message }}
+                    </div>
+
+                    <div class="notification-date">
+                        {{ notification.created_at|date:"d.m.Y H:i" }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div class="empty">
+                Сповіщень поки немає.
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}
