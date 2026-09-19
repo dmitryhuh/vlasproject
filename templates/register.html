@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Реєстрація — Made{% endblock %}
+
+{% block content %}
+
+<div class="auth-page">
+    <div class="auth-box">
+
+        <h1>Створити акаунт</h1>
+
+        <p class="auth-subtitle">
+            Приєднуйтесь до Made
+        </p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="auth-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                maxlength="150"
+                required
+            >
+
+            <input
+                type="password"
+                name="password"
+                placeholder="Пароль"
+                required
+            >
+
+            <input
+                type="password"
+                name="password2"
+                placeholder="Повторіть пароль"
+                required
+            >
+
+            <button type="submit">
+                Зареєструватися
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Вже маєте акаунт?
+            <a href="{% url 'login' %}">
+                Увійти
+            </a>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Made{% endblock %}
+
+{% block content %}
+
+<div class="home">
+
+    <div class="tabs">
+
+        <a href="{% url 'home' %}">
+            Для вас
+        </a>
+
+        <a href="?feed=following">
+            Підписки
+        </a>
+
+    </div>
+
+
+    {% if request.GET.feed == "following" %}
+
+        {% for post in following_posts %}
+
+            <article class="post">
+
+                <div class="post-top">
+
+                    <a
+                        href="{% url 'profile' post.author.username %}"
+                        class="username"
+                    >
+                        @{{ post.author.username }}
+                    </a>
+
+                    <span class="date">
+                        {{ post.created_at|date:"d.m.Y H:i" }}
+                    </span>
+
+                </div>
+
+                {% if post.text %}
+                    <div class="post-text">
+                        {{ post.text|linebreaksbr }}
+                    </div>
+                {% endif %}
+
+                {% if post.image %}
+                    <img
+                        src="{{ post.image.url }}"
+                        class="post-image"
+                        alt=""
+                    >
+                {% endif %}
+
+
+                <div class="actions">
+
+                    <form action="{% url 'like_post' post.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <i class="bi bi-heart"></i>
+                            {{ post.likes.count }}
+                        </button>
+                    </form>
+
+                    <a href="#comments-{{ post.id }}">
+                        <i class="bi bi-chat"></i>
+                        {{ post.comments.count }}
+                    </a>
+
+                    <form action="{% url 'repost_post' post.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <i class="bi bi-repeat"></i>
+                            {{ post.reposts.count }}
+                        </button>
+                    </form>
+
+                    <form action="{% url 'bookmark_post' post.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <i class="bi bi-bookmark"></i>
+                        </button>
+                    </form>
+
+                </div>
+
+
+                <div id="comments-{{ post.id }}" class="comments">
+
+                    {% for comment in post.comments.all %}
+
+                        <div class="comment">
+
+                            <a href="{% url 'profile' comment.author.username %}">
+                                @{{ comment.author.username }}
+                            </a>
+
+                            <span>{{ comment.text }}</span>
+
+                            {% if comment.author == user %}
+                                <a
+                                    href="{% url 'delete_comment' comment.id %}"
+                                    class="delete"
+                                >
+                                    Видалити
+                                </a>
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <form
+                    action="{% url 'add_comment' post.id %}"
+                    method="post"
+                    class="comment-form"
+                >
+                    {% csrf_token %}
+
+                    <input
+                        type="text"
+                        name="text"
+                        maxlength="280"
+                        placeholder="Написати коментар..."
+                        required
+                    >
+
+                    <button type="submit">
+                        <i class="bi bi-arrow-up"></i>
+                    </button>
+
+                </form>
+
+            </article>
+
+        {% empty %}
+
+            <div class="empty">
+                Тут поки що немає публікацій.
+            </div>
+
+        {% endfor %}
+
+
+    {% else %}
+
+        {% for post in posts %}
+
+            <article class="post">
+
+                <div class="post-top">
+
+                    <a
+                        href="{% url 'profile' post.author.username %}"
+                        class="username"
+                    >
+                        @{{ post.author.username }}
+                    </a>
+
+                    <span class="date">
+                        {{ post.created_at|date:"d.m.Y H:i" }}
+                    </span>
+
+                </div>
+
+                {% if post.text %}
+                    <div class="post-text">
+                        {{ post.text|linebreaksbr }}
+                    </div>
+                {% endif %}
+
+                {% if post.image %}
+                    <img
+                        src="{{ post.image.url }}"
+                        class="post-image"
+                        alt=""
+                    >
+                {% endif %}
+
+
+                <div class="actions">
+
+                    <form action="{% url 'like_post' post.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <i class="bi bi-heart"></i>
+                            {{ post.likes.count }}
+                        </button>
+                    </form>
+
+                    <a href="#comments-{{ post.id }}">
+                        <i class="bi bi-chat"></i>
+                        {{ post.comments.count }}
+                    </a>
+
+                    <form action="{% url 'repost_post' post.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <i class="bi bi-repeat"></i>
+                            {{ post.reposts.count }}
+                        </button>
+                    </form>
+
+                    <form action="{% url 'bookmark_post' post.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <i class="bi bi-bookmark"></i>
+                        </button>
+                    </form>
+
+                </div>
+
+
+                <div id="comments-{{ post.id }}" class="comments">
+
+                    {% for comment in post.comments.all %}
+
+                        <div class="comment">
+
+                            <a href="{% url 'profile' comment.author.username %}">
+                                @{{ comment.author.username }}
+                            </a>
+
+                            <span>{{ comment.text }}</span>
+
+                            {% if comment.author == user %}
+                                <a
+                                    href="{% url 'delete_comment' comment.id %}"
+                                    class="delete"
+                                >
+                                    Видалити
+                                </a>
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <form
+                    action="{% url 'add_comment' post.id %}"
+                    method="post"
+                    class="comment-form"
+                >
+                    {% csrf_token %}
+
+                    <input
+                        type="text"
+                        name="text"
+                        maxlength="280"
+                        placeholder="Написати коментар..."
+                        required
+                    >
+
+                    <button type="submit">
+                        <i class="bi bi-arrow-up"></i>
+                    </button>
+
+                </form>
+
+            </article>
+
+        {% empty %}
+
+            <div class="empty">
+                Поки що немає публікацій.
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

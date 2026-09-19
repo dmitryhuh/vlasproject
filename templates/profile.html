@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}@{{ profile_user.username }} — Made{% endblock %}
+
+{% block content %}
+
+<div class="profile-page">
+
+    <div class="profile-card">
+
+        {% if profile.avatar %}
+            <img
+                src="{{ profile.avatar.url }}"
+                class="profile-avatar"
+                alt="Аватар"
+            >
+        {% else %}
+            <div class="profile-avatar profile-avatar-empty">
+                {{ profile_user.username|first|upper }}
+            </div>
+        {% endif %}
+
+
+        <h2 class="profile-name">
+            {{ profile_user.username }}
+        </h2>
+
+        <div class="profile-username">
+            @{{ profile_user.username }}
+        </div>
+
+
+        {% if profile.bio %}
+            <div class="profile-bio">
+                {{ profile.bio }}
+            </div>
+        {% endif %}
+
+
+        <div class="profile-stats">
+
+            <div>
+                <strong>{{ posts.count }}</strong>
+                <span>Публікації</span>
+            </div>
+
+            <a href="{% url 'followers' profile_user.username %}">
+                <strong>{{ followers.count }}</strong>
+                <span>Підписники</span>
+            </a>
+
+            <a href="{% url 'following' profile_user.username %}">
+                <strong>{{ following.count }}</strong>
+                <span>Підписки</span>
+            </a>
+
+        </div>
+
+
+        {% if request.user == profile_user %}
+
+            <a
+                href="{% url 'edit_profile' %}"
+                class="profile-button"
+            >
+                Редагувати профіль
+            </a>
+
+        {% else %}
+
+            <a
+                href="{% url 'follow_user' profile_user.username %}"
+                class="profile-button"
+            >
+                {% if is_following %}
+                    Відписатися
+                {% else %}
+                    Підписатися
+                {% endif %}
+            </a>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="profile-posts-title">
+        Публікації
+    </div>
+
+
+    {% for post in posts %}
+
+        <article class="profile-post">
+
+            <div class="profile-post-date">
+                {{ post.created_at|date:"d.m.Y H:i" }}
+            </div>
+
+            {% if post.text %}
+                <div class="profile-post-text">
+                    {{ post.text|linebreaksbr }}
+                </div>
+            {% endif %}
+
+            {% if post.image %}
+                <img
+                    src="{{ post.image.url }}"
+                    class="profile-post-image"
+                    alt=""
+                >
+            {% endif %}
+
+            <div class="profile-post-actions">
+
+                <span>
+                    <i class="bi bi-heart"></i>
+                    {{ post.likes.count }}
+                </span>
+
+                <span>
+                    <i class="bi bi-repeat"></i>
+                    {{ post.reposts.count }}
+                </span>
+
+                <span>
+                    <i class="bi bi-chat"></i>
+                    {{ post.comments.count }}
+                </span>
+
+            </div>
+
+        </article>
+
+    {% empty %}
+
+        <div class="profile-empty">
+            Публікацій ще немає.
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}
