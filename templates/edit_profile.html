@@ -1,9 +1,180 @@
 {% extends "base.html" %}
 
-{% block title %}Made{% endblock %}
+{% block title %}Редагування профілю — Made{% endblock %}
 
 {% block content %}
 
+<div class="page">
 
+    <div class="edit-profile">
+
+        <div class="edit-header">
+
+            <a href="{% url 'profile' request.user.username %}">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+
+            <h1>Редагувати профіль</h1>
+
+        </div>
+
+
+        <form
+            method="post"
+            enctype="multipart/form-data"
+        >
+
+            {% csrf_token %}
+
+
+            <div class="edit-avatar">
+
+                {% if profile.avatar %}
+
+                    <img
+                        src="{{ profile.avatar.url }}"
+                        class="edit-profile-avatar"
+                        id="avatarPreview"
+                        alt=""
+                    >
+
+                {% else %}
+
+                    <div
+                        class="edit-profile-avatar avatar-empty"
+                        id="avatarPreview"
+                    >
+                        {{ request.user.username|first|upper }}
+                    </div>
+
+                {% endif %}
+
+
+                <label class="avatar-button">
+
+                    <i class="bi bi-camera"></i>
+                    Змінити аватар
+
+                    <input
+                        type="file"
+                        name="avatar"
+                        id="avatarInput"
+                        accept="image/*"
+                    >
+
+                </label>
+
+            </div>
+
+
+            <label class="edit-label">
+                Username
+            </label>
+
+            <input
+                type="text"
+                name="username"
+                value="{{ request.user.username }}"
+                maxlength="150"
+                class="edit-input"
+                required
+            >
+
+
+            <label class="edit-label">
+                Про себе
+            </label>
+
+            <textarea
+                name="bio"
+                maxlength="440"
+                class="edit-input edit-textarea"
+                placeholder="Розкажіть трохи про себе..."
+            >{{ profile.bio }}</textarea>
+
+
+            <label class="edit-label">
+                Дата народження
+            </label>
+
+            <input
+                type="date"
+                name="birthday"
+                value="{{ profile.birthday|date:'Y-m-d' }}"
+                min="1927-09-19"
+                max="2026-09-19"
+                class="edit-input edit-date"
+            >
+
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="auth-message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+
+            <button
+                type="submit"
+                class="edit-save"
+            >
+                Зберегти зміни
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+
+const avatarInput = document.getElementById("avatarInput");
+const avatarPreview = document.getElementById("avatarPreview");
+
+avatarInput.addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+        this.value = "";
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+
+        if (avatarPreview.tagName !== "IMG") {
+
+            const img = document.createElement("img");
+
+            img.id = "avatarPreview";
+            img.className = "edit-profile-avatar";
+            img.alt = "";
+
+            avatarPreview.replaceWith(img);
+
+            window.avatarPreview = img;
+
+        }
+
+        const preview = document.getElementById("avatarPreview");
+
+        preview.src = event.target.result;
+
+    };
+
+    reader.readAsDataURL(file);
+
+});
+
+</script>
 
 {% endblock %}

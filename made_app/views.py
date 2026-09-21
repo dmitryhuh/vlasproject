@@ -79,23 +79,16 @@ def logout_view(request):
 
 
 @login_required
-def like_post(request, post_id):
+def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    like = Like.objects.filter(user=request.user, post=post).first()
 
-    if like:
-        like.delete()
-    else:
-        Like.objects.create(user=request.user, post=post)
+    if post.author == request.user:
+        if post.image:
+            post.image.delete(save=False)
 
-        if post.author != request.user:
-            Notification.objects.create(
-                user=post.author,
-                message=f"{request.user.username} вподобав вашу публікацію."
-            )
+        post.delete()
 
     return redirect("home")
-
 
 @login_required
 def add_comment(request, post_id):
@@ -117,7 +110,7 @@ def add_comment(request, post_id):
                     message=f"{request.user.username} прокоментував вашу публікацію."
                 )
 
-    return redirect("home")
+    return redirect(request.META.get("HTTP_REFERER", "home"))
 
 
 @login_required
@@ -127,18 +120,51 @@ def delete_comment(request, comment_id):
     if comment.author == request.user:
         comment.delete()
 
-    return redirect("home")
+    return redirect(request.META.get("HTTP_REFERER", "home"))
+
+
+@login_required
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    like = Like.objects.filter(
+        user=request.user,
+        post=post
+    ).first()
+
+    if like:
+        like.delete()
+    else:
+        Like.objects.create(
+            user=request.user,
+            post=post
+        )
+
+        if post.author != request.user:
+            Notification.objects.create(
+                user=post.author,
+                message=f"{request.user.username} вподобав вашу публікацію."
+            )
+
+    return redirect(request.META.get("HTTP_REFERER", "home"))
 
 
 @login_required
 def repost_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    repost = Repost.objects.filter(user=request.user, post=post).first()
+
+    repost = Repost.objects.filter(
+        user=request.user,
+        post=post
+    ).first()
 
     if repost:
         repost.delete()
     else:
-        Repost.objects.create(user=request.user, post=post)
+        Repost.objects.create(
+            user=request.user,
+            post=post
+        )
 
         if post.author != request.user:
             Notification.objects.create(
@@ -146,20 +172,27 @@ def repost_post(request, post_id):
                 message=f"{request.user.username} зробив репост вашої публікації."
             )
 
-    return redirect("home")
+    return redirect(request.META.get("HTTP_REFERER", "home"))
 
 
 @login_required
 def bookmark_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    bookmark = Bookmark.objects.filter(user=request.user, post=post).first()
+
+    bookmark = Bookmark.objects.filter(
+        user=request.user,
+        post=post
+    ).first()
 
     if bookmark:
         bookmark.delete()
     else:
-        Bookmark.objects.create(user=request.user, post=post)
+        Bookmark.objects.create(
+            user=request.user,
+            post=post
+        )
 
-    return redirect("home")
+    return redirect(request.META.get("HTTP_REFERER", "home"))
 
 
 @login_required
@@ -174,9 +207,15 @@ def bookmarks(request):
 @login_required
 def profile(request, username):
     user = get_object_or_404(User, username=username)
+
     profile, created = Profile.objects.get_or_create(user=user)
 
     posts = Post.objects.filter(author=user)
+
+    repost_posts = Post.objects.filter(
+        reposts__user=user
+    ).distinct()
+
     followers = Follow.objects.filter(following=user)
     following = Follow.objects.filter(follower=user)
 
@@ -189,9 +228,10 @@ def profile(request, username):
         "profile_user": user,
         "profile": profile,
         "posts": posts,
+        "repost_posts": repost_posts,
         "followers": followers,
         "following": following,
-        "is_following": is_following
+        "is_following": is_following,
     })
 
 
@@ -316,3 +356,20 @@ def search(request):
         "users": users,
         "posts": posts
     })
+
+@login_required
+def create_post(request):
+    if request.method == "POST":
+        text = request.POST.get("text")
+        image = request.FILES.get("image")
+
+        if text or image:
+            Post.objects.create(
+                author=request.user,
+                text=text,
+                image=image
+            )
+
+            return redirect("home")
+
+    return render(request, "create_post.html")

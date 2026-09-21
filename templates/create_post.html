@@ -1,9 +1,96 @@
 {% extends "base.html" %}
 
-{% block title %}Створення публікації — Made{% endblock %}
+{% block title %}Створити публікацію — Made{% endblock %}
 
 {% block content %}
 
+<div class="page">
 
+    <div class="create-post">
+
+        <div class="edit-header">
+
+            <a href="{% url 'home' %}">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+
+            <h1>Нова публікація</h1>
+
+        </div>
+
+
+        <div class="create-user">
+
+            {% if request.user.profile.avatar %}
+
+                <img
+                    src="{{ request.user.profile.avatar.url }}"
+                    class="post-avatar"
+                    alt=""
+                >
+
+            {% else %}
+
+                <div class="post-avatar avatar-empty">
+                    {{ request.user.username|first|upper }}
+                </div>
+
+            {% endif %}
+
+
+            <div>
+                <div class="username">
+                    @{{ request.user.username }}
+                </div>
+            </div>
+
+        </div>
+
+
+        <form
+            method="post"
+            enctype="multipart/form-data"
+        >
+
+            {% csrf_token %}
+
+            <textarea
+                name="text"
+                maxlength="280"
+                placeholder="Що у вас нового?"
+            ></textarea>
+
+
+            <label class="image-button">
+
+                <i class="bi bi-image"></i>
+                Додати зображення
+
+                <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                >
+
+            </label>
+
+
+            <div class="create-post-footer">
+
+                <span>
+                    До 280 символів
+                </span>
+
+                <button type="submit">
+                    Опублікувати
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 {% endblock %}

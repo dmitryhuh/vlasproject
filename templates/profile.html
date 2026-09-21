@@ -25,6 +25,7 @@
             {{ profile_user.username }}
         </h2>
 
+
         <div class="profile-username">
             @{{ profile_user.username }}
         </div>
@@ -83,87 +84,60 @@
 
     </div>
 
+    <div class="profile-tabs">
 
-    <div class="profile-posts-title">
-        Публікації
+        <a
+            href="?tab=posts"
+            class="{% if request.GET.tab != 'reposts' %}active{% endif %}"
+        >
+            Публікації
+        </a>
+
+        <span class="profile-tab-divider"></span>
+
+        <a
+            href="?tab=reposts"
+            class="{% if request.GET.tab == 'reposts' %}active{% endif %}"
+        >
+            Репости
+        </a>
+
     </div>
 
+    {% if request.GET.tab == "reposts" %}
 
-    {% for post in posts %}
+        {% for post in repost_posts %}
 
-        <article class="profile-post">
-
-            <div class="post-user">
-
-                {% if profile.avatar %}
-                    <img
-                        src="{{ profile.avatar.url }}"
-                        class="post-avatar"
-                        alt=""
-                    >
-                {% else %}
-                    <div class="post-avatar avatar-empty">
-                        {{ profile_user.username|first|upper }}
-                    </div>
-                {% endif %}
-
-                <div>
-                    <div class="username">
-                        @{{ profile_user.username }}
-                    </div>
-
-                    <div class="date">
-                        {{ post.created_at|date:"d.m.Y H:i" }}
-                    </div>
-                </div>
-
+            <div class="repost-label">
+                <i class="bi bi-repeat"></i>
+                {{ profile_user.username }} зробив репост
             </div>
 
+            {% include "post.html" %}
 
-            {% if post.text %}
-                <div class="profile-post-text">
-                    {{ post.text|linebreaksbr }}
-                </div>
-            {% endif %}
+        {% empty %}
 
-
-            {% if post.image %}
-                <img
-                    src="{{ post.image.url }}"
-                    class="profile-post-image"
-                    alt=""
-                >
-            {% endif %}
-
-
-            <div class="profile-post-actions">
-
-                <span>
-                    <i class="bi bi-heart"></i>
-                    {{ post.likes.count }}
-                </span>
-
-                <span>
-                    <i class="bi bi-chat"></i>
-                    {{ post.comments.count }}
-                </span>
-
-                <span>
-                    <i class="bi bi-repeat"></i>
-                    {{ post.reposts.count }}
-                </span>
-
+            <div class="profile-empty">
+                Репостів ще немає.
             </div>
 
-        </article>
+        {% endfor %}
 
-    {% empty %}
+    {% else %}
 
-        <div class="profile-empty">
-            Публікацій ще немає.
-        </div>
+        {% for post in posts %}
 
-    {% endfor %}
+            {% include "post.html" %}
+
+        {% empty %}
+
+            <div class="profile-empty">
+                Публікацій ще немає.
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
 
 </div>
 
