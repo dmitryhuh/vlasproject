@@ -5,60 +5,185 @@
 {% block content %}
 
 <div class="auth-page">
-    <div class="auth-box">
 
-        <h1>Створити акаунт</h1>
+    <div class="auth-box register-box">
 
-        <p class="auth-subtitle">
-            Приєднуйтесь до Made
-        </p>
+        <div class="auth-logo">Made</div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="auth-message">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+        <div class="register-progress">
+            <span class="register-dot {% if step == 1 %}active{% endif %}"></span>
+            <span class="register-line"></span>
+            <span class="register-dot {% if step == 2 %}active{% endif %}"></span>
+        </div>
 
-        <form method="post">
+
+        <form method="post" id="register-form">
+
             {% csrf_token %}
 
-            <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                maxlength="150"
-                required
+            <section
+                class="register-step {% if step == 1 %}active{% endif %}"
+                data-step="1"
             >
 
-            <input
-                type="password"
-                name="password"
-                placeholder="Пароль"
-                required
+                <h1>Як вас звати?</h1>
+
+                <p class="auth-subtitle">
+                    Ім’я побачать інші користувачі. Прізвище можна не вказувати.
+                </p>
+
+                <label class="auth-label">
+                    Ім’я
+                </label>
+
+                <input
+                    type="text"
+                    name="first_name"
+                    value="{{ request.POST.first_name|default:'' }}"
+                    placeholder="Ваше ім’я"
+                    maxlength="150"
+                    autocomplete="given-name"
+                    required
+                >
+
+
+                <label class="auth-label">
+                    Прізвище <span class="optional">необов’язково</span>
+                </label>
+
+                <input
+                    type="text"
+                    name="last_name"
+                    value="{{ request.POST.last_name|default:'' }}"
+                    placeholder="Ваше прізвище"
+                    maxlength="150"
+                    autocomplete="family-name"
+                >
+
+
+                <label class="auth-label">
+                    Дата народження
+                </label>
+
+                <input
+                    type="date"
+                    name="birthday"
+                    value="{{ request.POST.birthday|default:'' }}"
+                    class="auth-date"
+                    required
+                >
+
+
+                {% if messages and step == 1 %}
+                    {% for message in messages %}
+                        <div class="auth-message">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+
+                <button
+                    type="button"
+                    class="register-next"
+                >
+                    Далі
+                </button>
+
+            </section>
+
+
+            <section
+                class="register-step {% if step == 2 %}active{% endif %}"
+                data-step="2"
             >
 
-            <input
-                type="password"
-                name="password2"
-                placeholder="Повторіть пароль"
-                required
-            >
+                <h1>Створення акаунта</h1>
 
-            <button type="submit">
-                Зареєструватися
-            </button>
+                <p class="auth-subtitle">
+                    Тепер придумайте username і пароль.
+                </p>
+
+
+                {% if messages and step == 2 %}
+                    {% for message in messages %}
+                        <div class="auth-message">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+
+                <label class="auth-label">
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    name="username"
+                    value="{{ request.POST.username|default:'' }}"
+                    placeholder="Придумайте username"
+                    maxlength="150"
+                    autocomplete="username"
+                    required
+                >
+
+
+                <label class="auth-label">
+                    Пароль
+                </label>
+
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Придумайте пароль"
+                    autocomplete="new-password"
+                    required
+                >
+
+
+                <label class="auth-label">
+                    Повторіть пароль
+                </label>
+
+                <input
+                    type="password"
+                    name="password2"
+                    placeholder="Повторіть пароль"
+                    autocomplete="new-password"
+                    required
+                >
+
+
+                <div class="register-navigation">
+
+                    <button
+                        type="button"
+                        class="register-back"
+                    >
+                        Назад
+                    </button>
+
+                    <button type="submit">
+                        Зареєструватися
+                    </button>
+
+                </div>
+
+            </section>
+
         </form>
+
 
         <div class="auth-footer">
             Вже маєте акаунт?
-            <a href="{% url 'login' %}">
-                Увійти
-            </a>
+            <a href="{% url 'login' %}">Увійти</a>
         </div>
 
     </div>
+
 </div>
+
+
 
 {% endblock %}

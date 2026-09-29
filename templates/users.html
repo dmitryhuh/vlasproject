@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — Made{% endblock %}
+
+{% block content %}
+
+<div class="page">
+
+    <div class="edit-header">
+        <a href="{% url 'profile' username %}">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h1>{{ title }}</h1>
+    </div>
+
+    <div class="search-users">
+        {% for found_user in users %}
+            <a href="{% url 'profile' found_user.username %}" class="user-result">
+                {% if found_user.profile.avatar %}
+                    <img
+                        src="{{ found_user.profile.avatar.url }}"
+                        class="user-result-avatar"
+                        alt=""
+                    >
+                {% else %}
+                    <div class="user-result-avatar avatar-empty">
+                        {{ found_user.username|first|upper }}
+                    </div>
+                {% endif %}
+
+                <div>
+                    <div class="user-result-name">{{ found_user.username }}</div>
+                    <div class="user-result-username">@{{ found_user.username }}</div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="empty">Тут поки що нікого немає.</div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,15 +1,8 @@
-<article class="post">
-
+<article class="post" data-post-id="{{ post.id }}">
     <div class="post-top">
-
         <div class="post-user">
-
             {% if post.author.profile.avatar %}
-                <img
-                    src="{{ post.author.profile.avatar.url }}"
-                    class="post-avatar"
-                    alt=""
-                >
+                <img src="{{ post.author.profile.avatar.url }}" class="post-avatar" alt="">
             {% else %}
                 <div class="post-avatar avatar-empty">
                     {{ post.author.username|first|upper }}
@@ -17,38 +10,24 @@
             {% endif %}
 
             <div>
-
-                <a
-                    href="{% url 'profile' post.author.username %}"
-                    class="username"
-                >
+                <a href="{% url 'profile' post.author.username %}" class="username">
                     @{{ post.author.username }}
                 </a>
-
                 <div class="date">
                     {{ post.created_at|date:"d.m.Y H:i" }}
                 </div>
-
             </div>
-
         </div>
 
         {% if post.author == user %}
-            <form
-                action="{% url 'delete_post' post.id %}"
-                method="post"
-                class="post-delete"
-            >
+            <form action="{% url 'delete_post' post.id %}" method="post" class="post-delete js-delete-post">
                 {% csrf_token %}
-
-                <button type="submit">
+                <button type="submit" title="Видалити">
                     <i class="bi bi-trash"></i>
                 </button>
             </form>
         {% endif %}
-
     </div>
-
 
     {% if post.text %}
         <div class="post-text">
@@ -56,141 +35,94 @@
         </div>
     {% endif %}
 
-
-    {% if post.image %}
-        <img
-            src="{{ post.image.url }}"
-            class="post-image"
-            alt=""
-        >
-    {% endif %}
-
+    {% with images=post.images.all %}
+        {% if images %}
+            <div class="post-images">
+                {% for post_image in images %}
+                    <img src="{{ post_image.image.url }}" class="post-image js-lightbox-image" data-group="post-{{ post.id }}" data-index="{{ forloop.counter0 }}" alt="">
+                {% endfor %}
+            </div>
+        {% elif post.image %}
+            <img src="{{ post.image.url }}" class="post-image js-lightbox-image" data-group="post-{{ post.id }}" data-index="0" alt="">
+        {% endif %}
+    {% endwith %}
 
     <div class="actions">
-
-        <form
-            action="{% url 'like_post' post.id %}"
-            method="post"
-        >
+        <form action="{% url 'like_post' post.id %}" method="post" class="js-reaction">
             {% csrf_token %}
-
-            <button type="submit">
-                <i class="bi bi-heart"></i>
-                {{ post.likes.count }}
+            <button type="submit" class="reaction-button {% if post.is_liked %}active{% endif %}" data-type="like">
+                <i class="bi {% if post.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                <span class="reaction-count">{{ post.likes.count }}</span>
             </button>
         </form>
 
-
-        <a href="#comments-{{ post.id }}">
+        <button type="button" class="comments-link" data-comments-target="comments-{{ post.id }}">
             <i class="bi bi-chat"></i>
-            {{ post.comments.count }}
-        </a>
+            <span class="reaction-count">{{ post.comments.count }}</span>
+        </button>
 
-
-        <form
-            action="{% url 'repost_post' post.id %}"
-            method="post"
-        >
+        <form action="{% url 'repost_post' post.id %}" method="post" class="js-reaction">
             {% csrf_token %}
-
-            <button type="submit">
+            <button type="submit" class="reaction-button {% if post.is_reposted %}active{% endif %}" data-type="repost">
                 <i class="bi bi-repeat"></i>
-                {{ post.reposts.count }}
+                <span class="reaction-count">{{ post.reposts.count }}</span>
             </button>
         </form>
 
-
-        <form
-            action="{% url 'bookmark_post' post.id %}"
-            method="post"
-        >
+        <form action="{% url 'bookmark_post' post.id %}" method="post" class="js-reaction">
             {% csrf_token %}
-
-            <button type="submit">
-                <i class="bi bi-bookmark"></i>
+            <button type="submit" class="reaction-button {% if post.is_bookmarked %}active{% endif %}" data-type="bookmark">
+                <i class="bi {% if post.is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
             </button>
         </form>
-
     </div>
 
+    <details class="comments-box" id="comments-{{ post.id }}">
+        <summary></summary>
 
-    <div id="comments-{{ post.id }}" class="comments">
+        <div class="comments-list">
+            {% for comment in post.comments.all %}
+                <div class="comment" data-comment-id="{{ comment.id }}">
+                    {% if comment.author.profile.avatar %}
+                        <img src="{{ comment.author.profile.avatar.url }}" class="comment-avatar" alt="">
+                    {% else %}
+                        <div class="comment-avatar avatar-empty">
+                            {{ comment.author.username|first|upper }}
+                        </div>
+                    {% endif %}
 
-        {% for comment in post.comments.all %}
-
-            <div class="comment">
-
-                {% if comment.author.profile.avatar %}
-
-                    <img
-                        src="{{ comment.author.profile.avatar.url }}"
-                        class="comment-avatar"
-                        alt=""
-                    >
-
-                {% else %}
-
-                    <div class="comment-avatar avatar-empty">
-                        {{ comment.author.username|first|upper }}
-                    </div>
-
-                {% endif %}
-
-
-                <div class="comment-content">
-
-                    <div class="comment-header">
-
-                        <a href="{% url 'profile' comment.author.username %}">
-                            @{{ comment.author.username }}
-                        </a>
-
-                        {% if comment.author == user %}
-
-                            <a
-                                href="{% url 'delete_comment' comment.id %}"
-                                class="comment-delete"
-                                title="Видалити"
-                            >
-                                <i class="bi bi-trash"></i>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <a href="{% url 'profile' comment.author.username %}">
+                                @{{ comment.author.username }}
                             </a>
 
-                        {% endif %}
+                            {% if comment.author == user %}
+                                <form action="{% url 'delete_comment' comment.id %}" method="post" class="comment-delete-form">
+                                    {% csrf_token %}
+                                    <button type="submit" title="Видалити">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
 
+                        <div class="comment-text">
+                            {{ comment.text }}
+                        </div>
                     </div>
-
-
-                    <div class="comment-text">
-                        {{ comment.text }}
-                    </div>
-
                 </div>
+            {% empty %}
+                <div class="comments-empty">Коментарів ще немає. Будьте першим!</div>
+            {% endfor %}
+        </div>
 
-            </div>
-
-        {% endfor %}
-
-    </div>
-
-
-    <form
-        action="{% url 'add_comment' post.id %}"
-        method="post"
-        class="comment-form"
-    >
-        {% csrf_token %}
-
-        <input
-            type="text"
-            name="text"
-            maxlength="280"
-            placeholder="Написати коментар..."
-            required
-        >
-
-        <button type="submit">
-            <i class="bi bi-arrow-up"></i>
-        </button>
-    </form>
-
+        <form action="{% url 'add_comment' post.id %}" method="post" class="comment-form js-comment-form">
+            {% csrf_token %}
+            <input type="text" name="text" maxlength="280" placeholder="Залишити коментар..." required>
+            <button type="submit" title="Надіслати">
+                <i class="bi bi-send"></i>
+            </button>
+        </form>
+    </details>
 </article>

@@ -7,7 +7,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     bio = models.TextField(max_length=440, blank=True)
-    birthday = models.DateField(blank=True)
+    birthday = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -25,6 +25,18 @@ class Post(models.Model):
 
     def __str__(self):
         return self.text[:50]
+
+
+class PostImage(models.Model):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='images'
+    )
+    image = models.ImageField(upload_to='posts/')
+
+    def __str__(self):
+        return f'Зображення для поста {self.post.id}'
 
 
 class Comment(models.Model):
@@ -57,6 +69,7 @@ class Repost(models.Model):
     class Meta:
         unique_together = ('user', 'post')
 
+
 class Bookmark(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='bookmarks')
@@ -73,6 +86,7 @@ class Follow(models.Model):
 
     class Meta:
         unique_together = ('follower', 'following')
+
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

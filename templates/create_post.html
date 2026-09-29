@@ -6,85 +6,77 @@
 
 <div class="page">
 
-    <div class="create-post">
+    <div class="composer">
 
-        <div class="edit-header">
-
-            <a href="{% url 'home' %}">
+        <div class="composer-header">
+            <a href="{% url 'home' %}" class="composer-back">
                 <i class="bi bi-arrow-left"></i>
             </a>
-
             <h1>Нова публікація</h1>
-
         </div>
-
-
-        <div class="create-user">
-
-            {% if request.user.profile.avatar %}
-
-                <img
-                    src="{{ request.user.profile.avatar.url }}"
-                    class="post-avatar"
-                    alt=""
-                >
-
-            {% else %}
-
-                <div class="post-avatar avatar-empty">
-                    {{ request.user.username|first|upper }}
-                </div>
-
-            {% endif %}
-
-
-            <div>
-                <div class="username">
-                    @{{ request.user.username }}
-                </div>
-            </div>
-
-        </div>
-
 
         <form
             method="post"
             enctype="multipart/form-data"
+            id="post-form"
         >
 
             {% csrf_token %}
 
+            <div class="composer-user">
+
+                {% if request.user.profile.avatar %}
+                    <img
+                        src="{{ request.user.profile.avatar.url }}"
+                        class="composer-avatar"
+                        alt=""
+                    >
+                {% else %}
+                    <div class="composer-avatar avatar-empty">
+                        {{ request.user.username|first|upper }}
+                    </div>
+                {% endif %}
+
+                <div>
+                    <div class="composer-username">@{{ request.user.username }}</div>
+                    <div class="composer-status">Публічна публікація</div>
+                </div>
+
+            </div>
+
             <textarea
                 name="text"
+                class="composer-textarea"
                 maxlength="280"
                 placeholder="Що у вас нового?"
             ></textarea>
 
+            <div class="composer-tools">
 
-            <label class="image-button">
+                <label class="composer-tool">
+                    <i class="bi bi-image"></i>
+                    Фото
+                    <input
+                        type="file"
+                        name="images"
+                        id="image-input"
+                        accept="image/*"
+                        multiple
+                    >
+                </label>
 
-                <i class="bi bi-image"></i>
-                Додати зображення
-
-                <input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                >
-
-            </label>
-
-
-            <div class="create-post-footer">
-
-                <span>
-                    До 280 символів
+                <span class="composer-counter">
+                    <span id="char-count">0</span>/280
                 </span>
 
-                <button type="submit">
+            </div>
+
+            <div id="image-preview" class="image-preview"></div>
+
+            <div class="composer-footer">
+                <button type="submit" class="publish-button">
                     Опублікувати
                 </button>
-
             </div>
 
         </form>

@@ -6,43 +6,39 @@
 
 <div class="page">
 
-    <div class="page-header">
-        <h1>Сповіщення</h1>
-    </div>
+<div class="page-header">
+    <h1>Сповіщення</h1>
+</div>
 
-    <div class="notifications">
+<div class="notifications">
 
-        {% for notification in notifications %}
+    {% for notification in notifications %}
 
-            <div class="notification-card">
-
-                <div class="notification-icon">
-                    <i class="bi bi-bell"></i>
-                </div>
-
-                <div class="notification-info">
-
-                    <div class="notification-message">
-                        {{ notification.message }}
-                    </div>
-
-                    <div class="notification-date">
-                        {{ notification.created_at|date:"d.m.Y H:i" }}
-                    </div>
-
-                </div>
-
+        <div class="notification-card {% if not notification.is_read %}unread{% endif %}">
+            <div class="notification-icon">
+                <i class="bi bi-bell"></i>
             </div>
 
-        {% empty %}
+            <div class="notification-info">
+                <div class="notification-message">
+                    {{ notification.message }}
+                </div>
 
-            <div class="empty">
-                Сповіщень поки немає.
+                <div class="notification-date">
+                    {{ notification.created_at|date:"d.m.Y H:i" }}
+                </div>
             </div>
 
-        {% endfor %}
+            {% if not notification.is_read %}
+                <span class="notification-dot"></span>
+            {% endif %}
+        </div>
 
-    </div>
+    {% empty %}
+        <div class="empty">Сповіщень поки немає.</div>
+    {% endfor %}
+
+</div>
 
 </div>
 

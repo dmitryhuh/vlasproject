@@ -5,58 +5,37 @@
 {% block content %}
 
 <div class="auth-page">
-
     <div class="auth-box">
 
-        <h1>Вхід</h1>
+        <div class="auth-logo">Made</div>
 
-        <p class="auth-subtitle">
-            Увійдіть у свій акаунт Made
-        </p>
+        <h1>З поверненням</h1>
 
+        <p class="auth-subtitle">Увійдіть у свій акаунт</p>
 
         {% if messages %}
             {% for message in messages %}
-                <div class="auth-message">
-                    {{ message }}
-                </div>
+                <div class="auth-message">{{ message }}</div>
             {% endfor %}
         {% endif %}
-
 
         <form method="post">
             {% csrf_token %}
 
-            <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                required
-            >
+            <label class="auth-label">Username</label>
+            <input type="text" name="username" placeholder="Введіть username" autocomplete="username" required>
 
-            <input
-                type="password"
-                name="password"
-                placeholder="Пароль"
-                required
-            >
+            <label class="auth-label">Пароль</label>
+            <input type="password" name="password" placeholder="Введіть пароль" autocomplete="current-password" required>
 
-            <button type="submit">
-                Увійти
-            </button>
-
+            <button type="submit">Увійти</button>
         </form>
 
-
         <div class="auth-footer">
-            Немає акаунта?
-            <a href="{% url 'register' %}">
-                Зареєструватися
-            </a>
+            Ще не маєте акаунта? <a href="{% url 'register' %}">Зареєструватися</a>
         </div>
 
     </div>
-
 </div>
 
 {% endblock %}

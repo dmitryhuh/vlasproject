@@ -9,49 +9,37 @@
     <div class="edit-profile">
 
         <div class="edit-header">
-
             <a href="{% url 'profile' request.user.username %}">
                 <i class="bi bi-arrow-left"></i>
             </a>
 
             <h1>Редагувати профіль</h1>
-
         </div>
 
 
-        <form
-            method="post"
-            enctype="multipart/form-data"
-        >
+        <form method="post" enctype="multipart/form-data">
 
             {% csrf_token %}
-
 
             <div class="edit-avatar">
 
                 {% if profile.avatar %}
-
                     <img
                         src="{{ profile.avatar.url }}"
                         class="edit-profile-avatar"
                         id="avatarPreview"
                         alt=""
                     >
-
                 {% else %}
-
                     <div
                         class="edit-profile-avatar avatar-empty"
                         id="avatarPreview"
                     >
                         {{ request.user.username|first|upper }}
                     </div>
-
                 {% endif %}
 
-
                 <label class="avatar-button">
-
                     <i class="bi bi-camera"></i>
                     Змінити аватар
 
@@ -61,10 +49,36 @@
                         id="avatarInput"
                         accept="image/*"
                     >
-
                 </label>
 
             </div>
+
+
+            <label class="edit-label">
+                Ім’я
+            </label>
+
+            <input
+                type="text"
+                name="first_name"
+                value="{{ request.user.first_name }}"
+                maxlength="150"
+                class="edit-input"
+                required
+            >
+
+
+            <label class="edit-label">
+                Прізвище
+            </label>
+
+            <input
+                type="text"
+                name="last_name"
+                value="{{ request.user.last_name }}"
+                maxlength="150"
+                class="edit-input"
+            >
 
 
             <label class="edit-label">
@@ -101,8 +115,6 @@
                 type="date"
                 name="birthday"
                 value="{{ profile.birthday|date:'Y-m-d' }}"
-                min="1927-09-19"
-                max="2026-09-19"
                 class="edit-input edit-date"
             >
 
@@ -116,10 +128,7 @@
             {% endif %}
 
 
-            <button
-                type="submit"
-                class="edit-save"
-            >
+            <button type="submit" class="edit-save">
                 Зберегти зміни
             </button>
 
@@ -129,52 +138,6 @@
 
 </div>
 
-<script>
 
-const avatarInput = document.getElementById("avatarInput");
-const avatarPreview = document.getElementById("avatarPreview");
-
-avatarInput.addEventListener("change", function () {
-
-    const file = this.files[0];
-
-    if (!file) {
-        return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-        this.value = "";
-        return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-
-        if (avatarPreview.tagName !== "IMG") {
-
-            const img = document.createElement("img");
-
-            img.id = "avatarPreview";
-            img.className = "edit-profile-avatar";
-            img.alt = "";
-
-            avatarPreview.replaceWith(img);
-
-            window.avatarPreview = img;
-
-        }
-
-        const preview = document.getElementById("avatarPreview");
-
-        preview.src = event.target.result;
-
-    };
-
-    reader.readAsDataURL(file);
-
-});
-
-</script>
 
 {% endblock %}

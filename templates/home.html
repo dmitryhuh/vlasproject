@@ -7,27 +7,30 @@
 <div class="home">
 
     <div class="feed-tabs">
-        <a href="{% url 'home' %}"
-           class="{% if request.GET.feed != 'following' %}active{% endif %}">
+        <a
+            href="{% url 'home' %}"
+            class="{% if request.GET.feed != 'following' %}active{% endif %}"
+        >
             Для вас
         </a>
 
         <span class="feed-divider"></span>
 
-        <a href="?feed=following"
-           class="{% if request.GET.feed == 'following' %}active{% endif %}">
+        <a
+            href="?feed=following"
+            class="{% if request.GET.feed == 'following' %}active{% endif %}"
+        >
             Підписки
         </a>
     </div>
+
 
     {% if request.GET.feed == "following" %}
 
         {% for post in following_posts %}
             {% include "post.html" %}
         {% empty %}
-            <div class="empty">
-                Тут поки що немає публікацій.
-            </div>
+            <div class="empty">Тут поки що немає публікацій.</div>
         {% endfor %}
 
     {% else %}
@@ -35,9 +38,7 @@
         {% for post in posts %}
             {% include "post.html" %}
         {% empty %}
-            <div class="empty">
-                Поки що немає публікацій.
-            </div>
+            <div class="empty">Поки що немає публікацій.</div>
         {% endfor %}
 
     {% endif %}

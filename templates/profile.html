@@ -21,14 +21,15 @@
         {% endif %}
 
 
+        {% if profile_user.first_name or profile_user.last_name %}
+            <div class="profile-full-name">
+                {{ profile_user.first_name }} {{ profile_user.last_name }}
+            </div>
+        {% endif %}
+
         <h2 class="profile-name">
-            {{ profile_user.username }}
-        </h2>
-
-
-        <div class="profile-username">
             @{{ profile_user.username }}
-        </div>
+        </h2>
 
 
         {% if profile.bio %}
@@ -38,10 +39,18 @@
         {% endif %}
 
 
+        {% if profile.birthday %}
+            <div class="profile-birthday">
+                <i class="bi bi-calendar3"></i>
+                {{ profile.birthday|date:"d.m.Y" }}
+            </div>
+        {% endif %}
+
+
         <div class="profile-stats">
 
             <div>
-                <strong>{{ posts.count }}</strong>
+                <strong>{{ posts|length }}</strong>
                 <span>Публікації</span>
             </div>
 
@@ -84,27 +93,36 @@
 
     </div>
 
+
     <div class="profile-tabs">
 
         <a
             href="?tab=posts"
-            class="{% if request.GET.tab != 'reposts' %}active{% endif %}"
+            class="{% if active_tab == 'posts' %}active{% endif %}"
         >
             Публікації
         </a>
 
-        <span class="profile-tab-divider"></span>
-
         <a
             href="?tab=reposts"
-            class="{% if request.GET.tab == 'reposts' %}active{% endif %}"
+            class="{% if active_tab == 'reposts' %}active{% endif %}"
         >
             Репости
         </a>
 
+        {% if request.user == profile_user %}
+            <a
+                href="?tab=saved"
+                class="{% if active_tab == 'saved' %}active{% endif %}"
+            >
+                Збережене
+            </a>
+        {% endif %}
+
     </div>
 
-    {% if request.GET.tab == "reposts" %}
+
+    {% if active_tab == "reposts" %}
 
         {% for post in repost_posts %}
 
@@ -116,25 +134,31 @@
             {% include "post.html" %}
 
         {% empty %}
-
             <div class="profile-empty">
                 Репостів ще немає.
             </div>
-
         {% endfor %}
+
+
+    {% elif active_tab == "saved" and request.user == profile_user %}
+
+        {% for post in saved_posts %}
+            {% include "post.html" %}
+        {% empty %}
+            <div class="profile-empty">
+                Збережених публікацій немає.
+            </div>
+        {% endfor %}
+
 
     {% else %}
 
         {% for post in posts %}
-
             {% include "post.html" %}
-
         {% empty %}
-
             <div class="profile-empty">
                 Публікацій ще немає.
             </div>
-
         {% endfor %}
 
     {% endif %}
