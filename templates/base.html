@@ -19,6 +19,8 @@
     >
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+
 </head>
 
 <body>
@@ -64,6 +66,15 @@
     </a>
 
     <a
+        href="{% url 'messenger:inbox' %}"
+        class="{% if request.resolver_match.namespace == 'messenger' %}active{% endif %}"
+        aria-label="Повідомлення"
+        title="Повідомлення"
+    >
+        <i class="bi bi-chat-dots"></i>
+    </a>
+
+    <a
         href="{% url 'create_post' %}"
         class="plus"
         aria-label="Створити"
@@ -92,5 +103,8 @@
 {% endif %}
 
     <script src="{% static 'js/main.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+    
 </body>
 </html>

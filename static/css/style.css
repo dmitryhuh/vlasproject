@@ -1424,3 +1424,31 @@ textarea {
         padding: 20px;
     }
 }
+
+
+.profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 23px 0;
+}
+
+.profile-actions .profile-button {
+    margin: 0;
+}
+
+.profile-button-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-color: #3a3e42;
+    background: #191c1e;
+    color: #f0f0f0;
+}
+
+.profile-button-secondary:hover {
+    border-color: #5b6064;
+    background: #24282a;
+    color: #fff;
+}

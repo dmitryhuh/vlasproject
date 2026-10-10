@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}@{{ other_user.username }} — Повідомлення — Made{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/messenger.css' %}">{% endblock %}
+
+{% block content %}
+<section class="conversation-page">
+    <header class="conversation-header">
+        <a class="conversation-back" href="{% url 'messenger:inbox' %}" aria-label="Назад до повідомлень">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+
+        <div class="conversation-person">
+            <a class="conversation-avatar-link" href="{% url 'profile' other_user.username %}" aria-label="Профіль {{ other_user.username }}">
+                {% if other_profile and other_profile.avatar %}
+                    <img class="messenger-avatar" src="{{ other_profile.avatar.url }}" alt="">
+                {% else %}
+                    <div class="messenger-avatar avatar-fallback">{{ other_user.username|first|upper }}</div>
+                {% endif %}
+            </a>
+            <a class="conversation-name-link" href="{% url 'profile' other_user.username %}">
+                <strong>{% if other_user.get_full_name %}{{ other_user.get_full_name }}{% else %}@{{ other_user.username }}{% endif %}</strong>
+            </a>
+        </div>
+    </header>
+
+    <div class="chat-message-list" id="messageThread"
+         data-messages-url="{% url 'messenger:conversation_messages' conversation.id %}"
+         data-send-url="{% url 'messenger:send_message' conversation.id %}"
+         data-last-id="{{ last_message_id|default:'0' }}"
+         aria-live="polite" aria-relevant="additions">
+        {% for message in chat_messages %}
+            <div class="message-row {% if message.sender_id == request.user.id %}own{% else %}other{% endif %}" data-message-id="{{ message.id }}">
+                <div class="message-bubble">
+                    {% if message.sender_id != request.user.id %}<span class="message-sender">{{ message.sender.username }}</span>{% endif %}
+                    <div class="message-text">{{ message.text }}</div>
+                    <time>{{ message.created_at|date:"H:i" }}</time>
+                </div>
+            </div>
+        {% empty %}
+            <div class="conversation-empty" id="conversationEmpty">
+                <h2>Почніть розмову</h2>
+                <p>Напишіть перше повідомлення.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <form class="message-compose" id="messageForm">
+        {% csrf_token %}
+        <textarea name="text" rows="1" maxlength="5000" placeholder="Написати повідомлення..." aria-label="Текст повідомлення" required></textarea>
+        <button type="submit" aria-label="Надіслати повідомлення"><i class="bi bi-arrow-up"></i></button>
+    </form>
+    <p class="message-error" id="messageError" role="status"></p>
+</section>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/messenger.js' %}" defer></script>{% endblock %}

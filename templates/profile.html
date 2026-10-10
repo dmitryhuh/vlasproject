@@ -76,20 +76,29 @@
                 Редагувати профіль
             </a>
 
-        {% else %}
+            {% else %}
 
-            <a
-                href="{% url 'follow_user' profile_user.username %}"
-                class="profile-button"
-            >
-                {% if is_following %}
-                    Відписатися
-                {% else %}
-                    Підписатися
-                {% endif %}
-            </a>
+                <div class="profile-actions">
+                    <a
+                        href="{% url 'follow_user' profile_user.username %}"
+                        class="profile-button"
+                    >
+                        {% if is_following %}
+                            Відписатися
+                        {% else %}
+                            Підписатися
+                        {% endif %}
+                    </a>
 
-        {% endif %}
+                    <a
+                        href="{% url 'messenger:start_chat' profile_user.username %}"
+                        class="profile-button profile-button-secondary"
+                    >
+                        Написати
+                    </a>
+                </div>
+
+            {% endif %}
 
     </div>
 
