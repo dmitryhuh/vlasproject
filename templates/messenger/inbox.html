@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Повідомлення — Made{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/messenger.css' %}?v=20261024-1">{% endblock %}
+
+{% block content %}
+<section class="messenger-page">
+    <div class="page-header">
+        <h1>Повідомлення</h1>
+    </div>
+
+    <form class="search-box" method="get" action="{% url 'messenger:inbox' %}">
+        <i class="bi bi-search"></i>
+        <input type="text" name="q" value="{{ query }}" placeholder="Пошук людей і чатів..." autocomplete="off">
+        {% if query %}
+            <a href="{% url 'messenger:inbox' %}" class="search-clear" aria-label="Очистити">
+                <i class="bi bi-x"></i>
+            </a>
+        {% endif %}
+    </form>
+
+    {% if query %}
+        <div class="messenger-section-title">Користувачі</div>
+        <div class="person-results">
+            {% for person in search_users %}
+                <a class="person-result" href="{% url 'messenger:start_chat' person.username %}">
+                    {% if person.profile.avatar %}
+                        <img class="messenger-avatar" src="{{ person.profile.avatar.url }}" alt="">
+                    {% else %}
+                        <div class="messenger-avatar avatar-fallback">{{ person.username|first|upper }}</div>
+                    {% endif %}
+                    <span class="person-result-info">
+                        <strong>{% if person.get_full_name %}{{ person.get_full_name }}{% else %}@{{ person.username }}{% endif %}</strong>
+                    </span>
+                </a>
+            {% empty %}
+                <p class="messenger-hint">Користувачів не знайдено.</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="messenger-section-title">{% if query %}Чати{% else %}Останні чати{% endif %}</div>
+    <div class="chat-list">
+        {% for chat in conversations %}
+            <a href="{% url 'messenger:conversation' chat.id %}" class="chat-list-item">
+                {% if chat.chat_user_profile and chat.chat_user_profile.avatar %}
+                    <img class="messenger-avatar" src="{{ chat.chat_user_profile.avatar.url }}" alt="">
+                {% else %}
+                    <div class="messenger-avatar avatar-fallback">{{ chat.chat_user.username|first|upper }}</div>
+                {% endif %}
+
+                <span class="chat-list-content">
+                    <span class="chat-list-top">
+                        <strong>{% if chat.chat_user.get_full_name %}{{ chat.chat_user.get_full_name }}{% else %}@{{ chat.chat_user.username }}{% endif %}</strong>
+                        {% if chat.last_message %}<time>{{ chat.last_message.created_at|date:"H:i" }}</time>{% endif %}
+                    </span>
+                    <span class="chat-list-bottom">
+                        <span class="chat-last-message">
+                            {% if chat.last_message %}
+                                {% if chat.last_message.sender_id == request.user.id %}Ви: {% endif %}{{ chat.last_message.text|truncatechars:64 }}
+                            {% else %}
+                                Напишіть перше повідомлення
+                            {% endif %}
+                        </span>
+                    </span>
+                </span>
+            </a>
+        {% empty %}
+            <div class="messenger-empty">
+                {% if query %}
+                    <h2>Чатів не знайдено</h2>
+                    <p>Спробуй інше ім’я або вибери користувача в результатах пошуку.</p>
+                {% else %}
+                    <h2>Поки немає повідомлень</h2>
+                    <p>Відкрий профіль користувача й натисни «Написати», щоб почати розмову.</p>
+                    <a class="messenger-action-link" href="{% url 'search' %}">Знайти людей</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

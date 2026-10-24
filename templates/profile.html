@@ -20,7 +20,6 @@
             </div>
         {% endif %}
 
-
         {% if profile_user.first_name or profile_user.last_name %}
             <div class="profile-full-name">
                 {{ profile_user.first_name }} {{ profile_user.last_name }}
@@ -31,13 +30,11 @@
             @{{ profile_user.username }}
         </h2>
 
-
         {% if profile.bio %}
             <div class="profile-bio">
                 {{ profile.bio }}
             </div>
         {% endif %}
-
 
         {% if profile.birthday %}
             <div class="profile-birthday">
@@ -45,7 +42,6 @@
                 {{ profile.birthday|date:"d.m.Y" }}
             </div>
         {% endif %}
-
 
         <div class="profile-stats">
 
@@ -66,7 +62,6 @@
 
         </div>
 
-
         {% if request.user == profile_user %}
 
             <a
@@ -76,23 +71,31 @@
                 Редагувати профіль
             </a>
 
-        {% else %}
+            {% else %}
 
-            <a
-                href="{% url 'follow_user' profile_user.username %}"
-                class="profile-button"
-            >
-                {% if is_following %}
-                    Відписатися
-                {% else %}
-                    Підписатися
-                {% endif %}
-            </a>
+                <div class="profile-actions">
+                    <a
+                        href="{% url 'follow_user' profile_user.username %}"
+                        class="profile-button"
+                    >
+                        {% if is_following %}
+                            Відписатися
+                        {% else %}
+                            Підписатися
+                        {% endif %}
+                    </a>
 
-        {% endif %}
+                    <a
+                        href="{% url 'messenger:start_chat' profile_user.username %}"
+                        class="profile-button profile-button-secondary"
+                    >
+                        Написати
+                    </a>
+                </div>
+
+            {% endif %}
 
     </div>
-
 
     <div class="profile-tabs">
 
@@ -121,7 +124,6 @@
 
     </div>
 
-
     {% if active_tab == "reposts" %}
 
         {% for post in repost_posts %}
@@ -139,7 +141,6 @@
             </div>
         {% endfor %}
 
-
     {% elif active_tab == "saved" and request.user == profile_user %}
 
         {% for post in saved_posts %}
@@ -149,7 +150,6 @@
                 Збережених публікацій немає.
             </div>
         {% endfor %}
-
 
     {% else %}
 
