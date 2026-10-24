@@ -52,20 +52,20 @@
             {% csrf_token %}
             <button type="submit" class="reaction-button {% if post.is_liked %}active{% endif %}" data-type="like">
                 <i class="bi {% if post.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                <span class="reaction-count">{{ post.likes.count }}</span>
+                <span class="reaction-count">{{ post.like_count }}</span>
             </button>
         </form>
 
         <button type="button" class="comments-link" data-comments-target="comments-{{ post.id }}">
             <i class="bi bi-chat"></i>
-            <span class="reaction-count">{{ post.comments.count }}</span>
+            <span class="reaction-count">{{ post.comment_count }}</span>
         </button>
 
         <form action="{% url 'repost_post' post.id %}" method="post" class="js-reaction">
             {% csrf_token %}
             <button type="submit" class="reaction-button {% if post.is_reposted %}active{% endif %}" data-type="repost">
                 <i class="bi bi-repeat"></i>
-                <span class="reaction-count">{{ post.reposts.count }}</span>
+                <span class="reaction-count">{{ post.repost_count }}</span>
             </button>
         </form>
 

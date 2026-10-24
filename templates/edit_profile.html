@@ -16,7 +16,6 @@
             <h1>Редагувати профіль</h1>
         </div>
 
-
         <form method="post" enctype="multipart/form-data">
 
             {% csrf_token %}
@@ -53,7 +52,6 @@
 
             </div>
 
-
             <label class="edit-label">
                 Ім’я
             </label>
@@ -67,7 +65,6 @@
                 required
             >
 
-
             <label class="edit-label">
                 Прізвище
             </label>
@@ -79,7 +76,6 @@
                 maxlength="150"
                 class="edit-input"
             >
-
 
             <label class="edit-label">
                 Username
@@ -94,7 +90,6 @@
                 required
             >
 
-
             <label class="edit-label">
                 Про себе
             </label>
@@ -105,7 +100,6 @@
                 class="edit-input edit-textarea"
                 placeholder="Розкажіть трохи про себе..."
             >{{ profile.bio }}</textarea>
-
 
             <label class="edit-label">
                 Дата народження
@@ -118,7 +112,6 @@
                 class="edit-input edit-date"
             >
 
-
             {% if messages %}
                 {% for message in messages %}
                     <div class="auth-message">
@@ -126,7 +119,6 @@
                     </div>
                 {% endfor %}
             {% endif %}
-
 
             <button type="submit" class="edit-save">
                 Зберегти зміни
@@ -137,7 +129,5 @@
     </div>
 
 </div>
-
-
 
 {% endblock %}

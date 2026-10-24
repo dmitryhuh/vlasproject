@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
@@ -11,7 +9,6 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
-
 
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -26,7 +23,6 @@ class Post(models.Model):
     def __str__(self):
         return self.text[:50]
 
-
 class PostImage(models.Model):
     post = models.ForeignKey(
         Post,
@@ -37,7 +33,6 @@ class PostImage(models.Model):
 
     def __str__(self):
         return f'Зображення для поста {self.post.id}'
-
 
 class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -51,7 +46,6 @@ class Comment(models.Model):
     def __str__(self):
         return self.text[:50]
 
-
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
@@ -59,7 +53,6 @@ class Like(models.Model):
 
     class Meta:
         unique_together = ('user', 'post')
-
 
 class Repost(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -69,7 +62,6 @@ class Repost(models.Model):
     class Meta:
         unique_together = ('user', 'post')
 
-
 class Bookmark(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='bookmarks')
@@ -78,7 +70,6 @@ class Bookmark(models.Model):
     class Meta:
         unique_together = ('user', 'post')
 
-
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
@@ -86,7 +77,6 @@ class Follow(models.Model):
 
     class Meta:
         unique_together = ('follower', 'following')
-
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

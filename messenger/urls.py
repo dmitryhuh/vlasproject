@@ -7,6 +7,5 @@ urlpatterns = [
     path("", views.inbox, name="inbox"),
     path("start/<str:username>/", views.start_chat, name="start_chat"),
     path("<int:conversation_id>/", views.conversation, name="conversation"),
-    path("<int:conversation_id>/messages/", views.conversation_messages, name="conversation_messages",),
-    path("<int:conversation_id>/send/", views.send_message, name="send_message",),
+    path("<int:message_id>/delete/", views.delete_message, name="delete_message"),
 ]

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}Повідомлення — Made{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/messenger.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/messenger.css' %}?v=20261024-1">{% endblock %}
 
 {% block content %}
 <section class="messenger-page">
@@ -63,7 +63,6 @@
                                 Напишіть перше повідомлення
                             {% endif %}
                         </span>
-                        {% if chat.unread_count %}<span class="unread-count">{{ chat.unread_count }}</span>{% endif %}
                     </span>
                 </span>
             </a>

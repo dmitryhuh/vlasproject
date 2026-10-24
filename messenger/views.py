@@ -1,48 +1,37 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Prefetch, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
-from django.views.decorators.http import require_GET, require_POST
+from django.urls import reverse
+from django.views.decorators.http import require_POST
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 from made_app.models import Profile
 from .models import Conversation, Message
 
-# Create your views here.
-
 def get_user_conversation(user, conversation_id):
-    return get_object_or_404(Conversation.objects.filter(Q(participant1=user) | Q(participant2=user)), pk=conversation_id)
-
-
-def prepare_message(message, user):
-    return {
-        "id": message.id,
-        "sender_id": message.sender_id,
-        "sender": message.sender.username,
-        "text": message.text,
-        "time": timezone.localtime(message.created_at).strftime("%H:%M"),
-        "is_mine": message.sender_id == user.id,
-    }
-
+    return get_object_or_404(
+        Conversation.objects.filter(Q(participant1=user) | Q(participant2=user)),
+        pk=conversation_id,
+    )
 
 @login_required
 def inbox(request):
     query = request.GET.get("q", "").strip()
-
     conversations = (
-        Conversation.objects.filter(Q(participant1=request.user) | Q(participant2=request.user))
+        Conversation.objects.filter(
+            (Q(participant1=request.user) | Q(participant2=request.user)),
+            messages__isnull=False,
+        )
+        .distinct()
         .select_related("participant1", "participant2")
         .prefetch_related(
             Prefetch(
                 "messages",
                 queryset=Message.objects.select_related("sender").order_by("-id")[:1],
                 to_attr="last_messages",
-            )
-        )
-        .annotate(
-            unread_count=Count(
-                "messages",
-                filter=Q(messages__is_read=False) & ~Q(messages__sender_id=request.user.id),
             )
         )
         .order_by("-updated_at")
@@ -54,13 +43,20 @@ def inbox(request):
             | Q(participant2=request.user, participant1__username__icontains=query)
         )
 
+    visible_conversations = []
+    seen_user_ids = set()
+
     for chat in conversations:
-        chat.chat_user = chat.other_user(request.user)
-        chat.chat_user_profile = Profile.objects.filter(user=chat.chat_user).first()
+        chat_user = chat.other_user(request.user)
+        if chat_user.id in seen_user_ids:
+            continue
+        seen_user_ids.add(chat_user.id)
+        chat.chat_user = chat_user
+        chat.chat_user_profile = Profile.objects.filter(user=chat_user).first()
         chat.last_message = chat.last_messages[0] if chat.last_messages else None
+        visible_conversations.append(chat)
 
     search_users = User.objects.none()
-
     if query:
         search_users = (
             User.objects.filter(
@@ -72,40 +68,32 @@ def inbox(request):
         )
 
     return render(request, "messenger/inbox.html", {
-        "conversations": conversations,
+        "conversations": visible_conversations,
         "query": query,
         "search_users": search_users,
     })
 
-
 @login_required
 def start_chat(request, username):
     other_user = get_object_or_404(User, username=username)
-
     if other_user == request.user:
         return redirect("messenger:inbox")
 
-    if request.user.id < other_user.id:
-        first_user, second_user = request.user, other_user
-    else:
-        first_user, second_user = other_user, request.user
-
+    first_user, second_user = sorted(
+        (request.user, other_user),
+        key=lambda item: item.id,
+    )
     chat, _ = Conversation.objects.get_or_create(
         participant1=first_user,
         participant2=second_user,
     )
-
     return redirect("messenger:conversation", conversation_id=chat.id)
-
 
 @login_required
 def conversation(request, conversation_id):
     chat = get_user_conversation(request.user, conversation_id)
     other_user = chat.other_user(request.user)
     other_profile = Profile.objects.filter(user=other_user).first()
-
-    chat.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
-
     chat_messages = list(
         chat.messages.select_related("sender").order_by("-id")[:60]
     )
@@ -116,52 +104,26 @@ def conversation(request, conversation_id):
         "other_user": other_user,
         "other_profile": other_profile,
         "chat_messages": chat_messages,
-        "last_message_id": chat_messages[-1].id if chat_messages else 0,
     })
-
-
-@login_required
-@require_GET
-def conversation_messages(request, conversation_id):
-    chat = get_user_conversation(request.user, conversation_id)
-    chat.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
-
-    try:
-        after_id = max(0, int(request.GET.get("after_id", "0")))
-    except (TypeError, ValueError):
-        after_id = 0
-
-    new_messages = (
-        chat.messages.filter(id__gt=after_id)
-        .select_related("sender")
-        .order_by("id")[:100]
-    )
-
-    return JsonResponse({
-        "messages": [prepare_message(message, request.user) for message in new_messages]
-    })
-
 
 @login_required
 @require_POST
-def send_message(request, conversation_id):
-    chat = get_user_conversation(request.user, conversation_id)
-    text = request.POST.get("text", "").strip()
-
-    if not text:
-        return JsonResponse({"ok": False, "error": "Напишіть повідомлення."}, status=400)
-
-    if len(text) > 5000:
-        return JsonResponse({
-            "ok": False,
-            "error": "Повідомлення має бути не довшим за 5000 символів.",
-        }, status=400)
-
-    message = Message.objects.create(
-        conversation=chat,
-        sender=request.user,
-        text=text,
+def delete_message(request, message_id):
+    message = get_object_or_404(
+        Message.objects.filter(
+            Q(conversation__participant1=request.user)
+            | Q(conversation__participant2=request.user)
+        ),
+        pk=message_id,
     )
-    chat.save(update_fields=["updated_at"])
 
-    return JsonResponse({"ok": True, "message": prepare_message(message, request.user)})
+    if message.sender_id != request.user.id:
+        return JsonResponse({"ok": False, "error": "Можна видаляти лише ваші повідомлення."}, status=403)
+
+    conversation_id = message.conversation_id
+    message.delete()
+    async_to_sync(get_channel_layer().group_send)(
+        f"chat_{conversation_id}",
+        {"type": "chat.delete", "message_id": message_id},
+    )
+    return JsonResponse({"ok": True, "id": message_id})

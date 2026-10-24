@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -11,6 +12,18 @@ from django.views.decorators.http import require_POST
 from .models import ( Bookmark, Comment, Follow, Like, Notification, Post, PostImage, Profile, Repost )
 
 def prepare_posts(posts, user):
+    like_totals = Like.objects.filter(post_id=OuterRef("pk")).order_by().values("post_id").annotate(total=Count("id")).values("total")
+    comment_totals = Comment.objects.filter(post_id=OuterRef("pk")).order_by().values("post_id").annotate(total=Count("id")).values("total")
+    repost_totals = Repost.objects.filter(post_id=OuterRef("pk")).order_by().values("post_id").annotate(total=Count("id")).values("total")
+
+    posts = posts.select_related("author", "author__profile").prefetch_related(
+        "images",
+        "comments__author__profile",
+    ).annotate(
+        like_count=Coalesce(Subquery(like_totals, output_field=IntegerField()), Value(0)),
+        comment_count=Coalesce(Subquery(comment_totals, output_field=IntegerField()), Value(0)),
+        repost_count=Coalesce(Subquery(repost_totals, output_field=IntegerField()), Value(0)),
+    )
     posts = list(posts)
     ids = [post.id for post in posts]
 
@@ -43,7 +56,6 @@ def prepare_posts(posts, user):
 
     return posts
 
-
 def home(request):
     posts = prepare_posts(Post.objects.all(), request.user)
     following_posts = []
@@ -62,7 +74,6 @@ def home(request):
         "posts": posts,
         "following_posts": following_posts,
     })
-
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -132,7 +143,6 @@ def register_view(request):
 
     return render(request, "register.html", context)
 
-
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("home")
@@ -165,12 +175,10 @@ def login_view(request):
 
     return render(request, "login.html")
 
-
 @login_required
 def logout_view(request):
     logout(request)
     return redirect("login")
-
 
 @login_required
 @require_POST
@@ -183,7 +191,6 @@ def delete_post(request, post_id):
     post.delete()
 
     return JsonResponse({"ok": True})
-
 
 @login_required
 @require_POST
@@ -223,7 +230,6 @@ def add_comment(request, post_id):
         "delete_url": f"/comment/{comment.id}/delete/",
     })
 
-
 @login_required
 @require_POST
 def delete_comment(request, comment_id):
@@ -238,7 +244,6 @@ def delete_comment(request, comment_id):
     comment.delete()
 
     return JsonResponse({"ok": True})
-
 
 @login_required
 @require_POST
@@ -273,7 +278,6 @@ def like_post(request, post_id):
         "count": post.likes.count(),
     })
 
-
 @login_required
 @require_POST
 def repost_post(request, post_id):
@@ -306,7 +310,6 @@ def repost_post(request, post_id):
         "active": active,
         "count": post.reposts.count(),
     })
-
 
 @login_required
 @require_POST
@@ -399,7 +402,6 @@ def profile(request, username):
         "is_following": is_following,
         "active_tab": tab,
     })
-
 
 @login_required
 def edit_profile(request):
@@ -495,7 +497,6 @@ def edit_profile(request):
         "profile": profile,
     })
 
-
 @login_required
 def follow_user(request, username):
     user = get_object_or_404(
@@ -532,7 +533,6 @@ def follow_user(request, username):
         username=username
     )
 
-
 @login_required
 def followers(request, username):
     user = get_object_or_404(
@@ -557,7 +557,6 @@ def followers(request, username):
         "users": users,
     })
 
-
 @login_required
 def following(request, username):
     user = get_object_or_404(
@@ -581,7 +580,6 @@ def following(request, username):
         "username": username,
         "users": users,
     })
-
 
 @login_required
 def notifications(request):
@@ -629,7 +627,6 @@ def search(request):
         "users": users,
         "posts": posts,
     })
-
 
 @login_required
 def create_post(request):

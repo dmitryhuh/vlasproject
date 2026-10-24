@@ -20,7 +20,6 @@
             </div>
         {% endif %}
 
-
         {% if profile_user.first_name or profile_user.last_name %}
             <div class="profile-full-name">
                 {{ profile_user.first_name }} {{ profile_user.last_name }}
@@ -31,13 +30,11 @@
             @{{ profile_user.username }}
         </h2>
 
-
         {% if profile.bio %}
             <div class="profile-bio">
                 {{ profile.bio }}
             </div>
         {% endif %}
-
 
         {% if profile.birthday %}
             <div class="profile-birthday">
@@ -45,7 +42,6 @@
                 {{ profile.birthday|date:"d.m.Y" }}
             </div>
         {% endif %}
-
 
         <div class="profile-stats">
 
@@ -65,7 +61,6 @@
             </a>
 
         </div>
-
 
         {% if request.user == profile_user %}
 
@@ -102,7 +97,6 @@
 
     </div>
 
-
     <div class="profile-tabs">
 
         <a
@@ -130,7 +124,6 @@
 
     </div>
 
-
     {% if active_tab == "reposts" %}
 
         {% for post in repost_posts %}
@@ -148,7 +141,6 @@
             </div>
         {% endfor %}
 
-
     {% elif active_tab == "saved" and request.user == profile_user %}
 
         {% for post in saved_posts %}
@@ -158,7 +150,6 @@
                 Збережених публікацій немає.
             </div>
         {% endfor %}
-
 
     {% else %}
 
