@@ -1,9 +1,37 @@
+import os
 from pathlib import Path
 
+import dj_database_url
+from dotenv import load_dotenv
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-r)4a=%g+_&jck)*#^jl_$(ktju4qkk@ddvr4u3_u(wvh%+&-8n'
-DEBUG = True
-ALLOWED_HOSTS = []
+
+load_dotenv(BASE_DIR / ".env", override=False)
+
+SECRET_KEY = os.environ["SECRET_KEY"]
+
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+ALLOWED_HOSTS = [
+    value.strip()
+    for value in os.getenv(
+        "ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]"
+    ).split(",")
+    if value.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    value.strip()
+    for value in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if value.strip()
+]
+
+for name in ("VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL"):
+    if os.getenv(name):
+        ALLOWED_HOSTS.append(os.environ[name])
+
+
 
 INSTALLED_APPS = [
     "daphne",
@@ -54,12 +82,22 @@ CHANNEL_LAYERS = {
 }
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(
+        default="sqlite:///db.sqlite3",
+        conn_max_age=600,
+    )
 }
 
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+    DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
+    DATABASES["default"].setdefault("OPTIONS", {}).update(
+        sslmode="require",
+        prepare_threshold=None,
+    )
+
+    if os.getenv("VERCEL"):
+        DATABASES["default"]["CONN_MAX_AGE"] = 0
+        
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -73,6 +111,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 MAILERS = {
@@ -83,5 +122,44 @@ MAILERS = {
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+if os.getenv("SUPABASE_S3_ENDPOINT_URL"):
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "endpoint_url": os.environ["SUPABASE_S3_ENDPOINT_URL"],
+            "access_key": os.environ["SUPABASE_S3_ACCESS_KEY_ID"],
+            "secret_key": os.environ["SUPABASE_S3_SECRET_ACCESS_KEY"],
+            "region_name": os.environ["SUPABASE_S3_REGION_NAME"],
+            "bucket_name": os.environ["SUPABASE_STORAGE_BUCKET"],
+            "addressing_style": "path",
+            "signature_version": "s3v4",
+            "default_acl": None,
+            "file_overwrite": False,
+            "querystring_auth": True,
+            "querystring_expire": 3600,
+        },
+    }
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    if os.getenv("VERCEL"):
+        SECURE_PROXY_SSL_HEADER = (
+            "HTTP_X_FORWARDED_PROTO",
+            "https",
+        )
+
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
